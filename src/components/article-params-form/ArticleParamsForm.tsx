@@ -34,8 +34,6 @@ export const ArticleParamsForm = ({
 		[styles.container_open]: isOpen,
 	});
 
-	console.log(defaultStates);
-
 	const [selected, setSelected] = useState(defaultStates.fontFamilyOption);
 
 	const [radioGroupSelected, setRadioGroupSelected] = useState(
