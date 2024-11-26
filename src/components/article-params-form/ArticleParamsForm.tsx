@@ -3,7 +3,7 @@ import { Button } from 'src/ui/button';
 import { Select } from 'src/ui/select';
 
 import styles from './ArticleParamsForm.module.scss';
-import { SyntheticEvent, useState } from 'react';
+import { SyntheticEvent, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { RadioGroup } from 'src/ui/radio-group';
 
@@ -27,11 +27,11 @@ export const ArticleParamsForm = ({
 	defaultStates,
 	setCurrentArticleState,
 }: TArticleParamsFormProps) => {
-	const [isOpen, setIsOpen] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 	const asideStyle = clsx({
 		[styles.container]: true,
-		[styles.container_open]: isOpen,
+		[styles.container_open]: isMenuOpen,
 	});
 
 	const [selected, setSelected] = useState(defaultStates.fontFamilyOption);
@@ -76,15 +76,44 @@ export const ArticleParamsForm = ({
 		setCurrentArticleState(defaultArticleState);
 	}
 
+	const handleEscape = (e: KeyboardEvent) => {
+		e.key == 'Escape' && setIsMenuOpen(!isMenuOpen);
+	};
+
+	const rootRef = useRef<HTMLInputElement | null>(null);
+
+	const handleClick = (event: MouseEvent) => {
+		const { target } = event;
+		const isOutsideClick =
+			target instanceof Node && // проверяем, что это `DOM`-элемент
+			rootRef.current &&
+			!rootRef.current.contains(target); // проверяем, что кликнули на элемент, который находится не внутри нашего блока
+		if (isOutsideClick) {
+			setIsMenuOpen(!isMenuOpen);
+		}
+	};
+
+	useEffect(() => {
+		if (!isMenuOpen) return;
+
+		document.addEventListener('keydown', handleEscape);
+		document.addEventListener('mousedown', handleClick);
+
+		return () => {
+			document.removeEventListener('keydown', handleEscape);
+			document.removeEventListener('mousedown', handleClick);
+		};
+	}, [isMenuOpen]);
+
 	return (
 		<>
 			<ArrowButton
-				isOpen={isOpen}
+				isOpen={isMenuOpen}
 				onClick={() => {
-					setIsOpen(!isOpen);
+					setIsMenuOpen(!isMenuOpen);
 				}}
 			/>
-			<aside className={asideStyle}>
+			<aside ref={rootRef} className={asideStyle}>
 				<form className={styles.form} onSubmit={handleSubmit}>
 					<Select
 						selected={selected}
